@@ -1,539 +1,284 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Missão Pixel - Jogo do Labirinto</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-dark: #070b14;
-      --blue-deep: #0f1b38;
-      --blue-mid: #1b2d58;
-      --blue-light: #2d4a8d;
-      --red-bright: #ff2a4b;
-      --red-deep: #b3102c;
-      --red-glow: rgba(255, 42, 75, 0.45);
-      --white: #ffffff;
-      --pixel-size: 4px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Missão Pixel - Jogo do Labirinto</title>
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #070b14;
+            --blue-deep: #0f1b38;
+            --blue-mid: #1b2d58;
+            --blue-light: #2d4a8d;
+            --red-bright: #ff2a4b;
+            --red-deep: #b3102c;
+            --red-glow: rgba(255, 42, 75, 0.45);
+            --white: #ffffff;
+            --pixel-size: 4px;
+        }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      user-select: none;
-      -webkit-user-select: none;
-    }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            /* Remove o flash cinzento ao tocar em botões no telemóvel */
+            -webkit-tap-highlight-color: transparent; 
+        }
 
-    body {
-      background-color: var(--bg-dark);
-      background-image: 
-        radial-gradient(circle at 50% 30%, #162244 0%, var(--bg-dark) 80%);
-      color: var(--white);
-      font-family: 'Press Start 2P', monospace;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      overflow-x: hidden;
-      image-rendering: pixelated;
-    }
+        body {
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 50% 30%, #162244 0%, var(--bg-dark) 80%);
+            color: var(--white);
+            font-family: 'Press Start 2P', monospace;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            overflow-x: hidden;
+            image-rendering: pixelated;
+        }
 
-    /* Linhas de scanline CRT retrô sutis */
-    body::after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(
-        rgba(18, 16, 16, 0) 50%, 
-        rgba(0, 0, 0, 0.25) 50%
-      );
-      background-size: 100% 4px;
-      pointer-events: none;
-      z-index: 99;
-      opacity: 0.6;
-    }
+        /* Linhas de scanline CRT retrô sutis */
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%,
+                rgba(0, 0, 0, 0.25) 50%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 99;
+            opacity: 0.6;
+        }
 
-    .game-wrapper {
-      width: 100%;
-      max-width: 580px;
-      position: relative;
-      z-index: 10;
-    }
+        .game-wrapper {
+            width: 100%;
+            max-width: 580px;
+            position: relative;
+            z-index: 10;
+        }
 
-    /* Estilo de moldura Pixel Art */
-    .pixel-box {
-      background-color: var(--blue-deep);
-      border: 4px solid #000;
-      box-shadow: 
-        0 0 0 4px var(--blue-mid),
-        0 0 0 8px #000,
-        0 12px 30px rgba(0, 0, 0, 0.8);
-      padding: 32px 24px;
-      text-align: center;
-      display: none;
-      animation: popIn 0.25s steps(3);
-    }
+        /* Estilo de moldura Pixel Art */
+        .pixel-box {
+            background-color: var(--blue-deep);
+            border: 4px solid #000;
+            box-shadow: 0 0 0 4px var(--blue-mid), 0 0 0 8px #000, 0 12px 30px rgba(0, 0, 0, 0.8);
+            padding: 32px 24px;
+            text-align: center;
+            display: none;
+            animation: popIn 0.25s steps(3);
+        }
 
-    .pixel-box.active {
-      display: block;
-    }
+        .pixel-box.active {
+            display: block;
+        }
 
-    @keyframes popIn {
-      from { transform: scale(0.95); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
+        @keyframes popIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
 
-    h1 {
-      font-size: 1.25rem;
-      color: var(--red-bright);
-      line-height: 1.6;
-      margin-bottom: 24px;
-      text-shadow: 3px 3px 0px #000, -2px -2px 0px var(--blue-mid);
-    }
+        h1 {
+            font-size: 1.25rem;
+            color: var(--red-bright);
+            line-height: 1.6;
+            margin-bottom: 24px;
+            text-shadow: 3px 3px 0px #000, -2px -2px 0px var(--blue-mid);
+        }
 
-    p {
-      font-size: 0.72rem;
-      line-height: 1.9;
-      color: #e0e6f5;
-      margin-bottom: 24px;
-      text-shadow: 2px 2px 0px #000;
-    }
+        p {
+            font-size: 0.72rem;
+            line-height: 1.9;
+            color: #e0e6f5;
+            margin-bottom: 24px;
+            text-shadow: 2px 2px 0px #000;
+        }
 
-    /* Botão estilo 8-bit */
-    .pixel-btn {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.75rem;
-      background: var(--red-bright);
-      color: #fff;
-      border: 4px solid #000;
-      padding: 16px 24px;
-      cursor: pointer;
-      box-shadow: 
-        inset -4px -4px 0px var(--red-deep),
-        inset 4px 4px 0px #ff7b92,
-        4px 4px 0px #000;
-      transition: transform 0.08s steps(2);
-      text-transform: uppercase;
-      display: inline-block;
-    }
+        /* Botão estilo 8-bit */
+        .pixel-btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.75rem;
+            background: var(--red-bright);
+            color: #fff;
+            border: 4px solid #000;
+            padding: 16px 24px;
+            cursor: pointer;
+            box-shadow: inset -4px -4px 0px var(--red-deep), inset 4px 4px 0px #ff7b92, 4px 4px 0px #000;
+            transition: transform 0.08s steps(2);
+            text-transform: uppercase;
+            display: inline-block;
+            touch-action: manipulation; /* CORREÇÃO: Remove zoom ao clicar rápido */
+        }
 
-    .pixel-btn:hover {
-      background: #ff3e5c;
-    }
+        .pixel-btn:hover {
+            background: #ff3e5c;
+        }
 
-    .pixel-btn:active {
-      transform: translate(4px, 4px);
-      box-shadow: 
-        inset 4px 4px 0px var(--red-deep),
-        0px 0px 0px #000;
-    }
+        .pixel-btn:active {
+            transform: translate(4px, 4px);
+            box-shadow: inset 4px 4px 0px var(--red-deep), 0px 0px 0px #000;
+        }
 
-    /* ============================================================
-       PÁGINA 2: O LABIRINTO
-       ============================================================ */
-    .maze-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-    }
+        /* ============================================================
+           PÁGINA 2: O LABIRINTO
+        ============================================================ */
+        .maze-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
 
-    .maze-header {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.65rem;
-      color: var(--red-bright);
-      margin-bottom: 8px;
-    }
+        .maze-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.65rem;
+            color: var(--red-bright);
+            margin-bottom: 8px;
+        }
 
-    #mazeCanvas {
-      background-color: #000;
-      border: 4px solid #000;
-      box-shadow: 0 0 0 4px var(--red-bright);
-      image-rendering: pixelated;
-      max-width: 100%;
-      height: auto;
-    }
+        #mazeCanvas {
+            background-color: #000;
+            border: 4px solid #000;
+            box-shadow: 0 0 0 4px var(--red-bright);
+            image-rendering: pixelated;
+            max-width: 100%;
+            height: auto;
+        }
 
-    /* D-PAD para telemóveis / cliques */
-    .dpad {
-      margin-top: 14px;
-      display: grid;
-      grid-template-columns: repeat(3, 50px);
-      grid-template-rows: repeat(2, 45px);
-      gap: 6px;
-      justify-content: center;
-    }
+        /* D-PAD para telemóveis / cliques */
+        .dpad {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: repeat(3, 50px);
+            grid-template-rows: repeat(2, 45px);
+            gap: 6px;
+            justify-content: center;
+        }
 
-    .dpad-btn {
-      background: var(--blue-mid);
-      border: 3px solid #000;
-      color: var(--white);
-      font-family: inherit;
-      font-size: 0.9rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 
-        inset 2px 2px 0px var(--blue-light),
-        inset -2px -2px 0px #091024,
-        2px 2px 0px #000;
-    }
+        .dpad-btn {
+            background: var(--blue-mid);
+            border: 3px solid #000;
+            color: var(--white);
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 2px 2px 0px var(--blue-light), inset -2px -2px 0px #091024, 2px 2px 0px #000;
+            touch-action: manipulation; /* CORREÇÃO: Impede o zoom do ecrã ao clicar rápido nas setas */
+        }
 
-    .dpad-btn:active {
-      transform: translate(2px, 2px);
-      box-shadow: none;
-      background: var(--red-deep);
-    }
+        .dpad-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: none;
+            background: var(--red-deep);
+        }
 
-    .dpad-up { grid-column: 2; grid-row: 1; }
-    .dpad-left { grid-column: 1; grid-row: 2; }
-    .dpad-down { grid-column: 2; grid-row: 2; }
-    .dpad-right { grid-column: 3; grid-row: 2; }
+        .dpad-up { grid-column: 2; grid-row: 1; }
+        .dpad-left { grid-column: 1; grid-row: 2; }
+        .dpad-down { grid-column: 2; grid-row: 2; }
+        .dpad-right { grid-column: 3; grid-row: 2; }
 
-    /* ============================================================
-       PÁGINA 3: BORDA ANIMADA E CORAÇÃO EM PIXEL
-       ============================================================ */
-    .animated-pixel-border {
-      position: relative;
-      background-color: var(--blue-deep);
-      padding: 36px 24px;
-      border: 6px solid #000;
-      box-shadow: 0 0 0 6px var(--red-bright);
-      animation: borderFlash 1.2s infinite steps(2);
-    }
+        /* ============================================================
+           PÁGINA 3: BORDA ANIMADA E CORAÇÃO EM PIXEL
+        ============================================================ */
+        .animated-pixel-border {
+            position: relative;
+            background-color: var(--blue-deep);
+            padding: 36px 24px;
+            border: 6px solid #000;
+            box-shadow: 0 0 0 6px var(--red-bright);
+            animation: borderFlash 1.2s infinite steps(2);
+        }
 
-    @keyframes borderFlash {
-      0% {
-        box-shadow: 
-          0 0 0 6px var(--red-bright),
-          0 0 24px var(--red-glow);
-        border-color: var(--blue-mid);
-      }
-      50% {
-        box-shadow: 
-          0 0 0 6px var(--blue-light),
-          0 0 24px rgba(45, 74, 141, 0.6);
-        border-color: var(--red-deep);
-      }
-      100% {
-        box-shadow: 
-          0 0 0 6px var(--red-bright),
-          0 0 24px var(--red-glow);
-        border-color: var(--blue-mid);
-      }
-    }
+        @keyframes borderFlash {
+            0% { box-shadow: 0 0 0 6px var(--red-bright), 0 0 24px var(--red-glow); border-color: var(--blue-mid); }
+            50% { box-shadow: 0 0 0 6px var(--blue-light), 0 0 24px rgba(45, 74, 141, 0.6); border-color: var(--red-deep); }
+            100% { box-shadow: 0 0 0 6px var(--red-bright), 0 0 24px var(--red-glow); border-color: var(--blue-mid); }
+        }
 
-    /* Coração em Pixel Art Puro */
-    .pixel-heart {
-      width: 140px;
-      height: 120px;
-      margin: 20px auto 28px auto;
-      position: relative;
-      animation: heartbeat 0.8s infinite steps(2);
-    }
+        /* Coração em Pixel Art Puro */
+        .pixel-heart {
+            width: 140px;
+            height: 120px;
+            margin: 20px auto 28px auto;
+            position: relative;
+            animation: heartbeat 0.8s infinite steps(2);
+        }
 
-    @keyframes heartbeat {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.12); }
-      100% { transform: scale(1); }
-    }
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.12); }
+            100% { transform: scale(1); }
+        }
 
-    .final-title {
-      font-size: 1.15rem;
-      color: var(--red-bright);
-      margin-bottom: 20px;
-    }
+        .final-title {
+            font-size: 1.15rem;
+            color: var(--red-bright);
+            margin-bottom: 20px;
+        }
 
-    .final-text {
-      font-size: 0.72rem;
-      line-height: 2;
-      color: #fff;
-    }
-  </style>
+        .final-text {
+            font-size: 0.72rem;
+            line-height: 2;
+            color: #fff;
+        }
+    </style>
 </head>
 <body>
 
-  <div class="game-wrapper">
-
-    <!-- ================= PÁGINA 1: INTRODUÇÃO ================= -->
-    <div class="pixel-box active" id="page1">
-      <h1>[ MISSÃO CHEGUE NO MEU CORAÇÃO ]</h1>
-      <p>
-        OI, MEU AMOR!<br><br>
-        FIZ UM JOGUINHO PRA VOCÊ🥹<br><br>
-        O TEU OBJETIVO É SIMPLES:<br>
-        CHEGUE ATÉ MEU CORAÇÃO.
-      </p>
-      <button class="pixel-btn" onclick="startGame()">▶ INICIAR JOGO</button>
-    </div>
-
-    <!-- ================= PÁGINA 2: O LABIRINTO ================= -->
-    <div class="pixel-box" id="page2">
-      <div class="maze-container">
-        <div class="maze-header">
-          <span>FASE: 01</span>
-          <span>OBJETIVO: ❤️</span>
-        </div>
-        
-        <canvas id="mazeCanvas" width="330" height="330"></canvas>
-
-        <!-- Controlos no ecrã para telemóvel -->
-        <div class="dpad">
-          <button class="dpad-btn dpad-up" onclick="movePlayer(0, -1)">▲</button>
-          <button class="dpad-btn dpad-left" onclick="movePlayer(-1, 0)">◀</button>
-          <button class="dpad-btn dpad-down" onclick="movePlayer(0, 1)">▼</button>
-          <button class="dpad-btn dpad-right" onclick="movePlayer(1, 0)">▶</button>
-        </div>
-        <p style="font-size: 0.55rem; color: #8e9bb5; margin: 6px 0 0 0;">
-          Usa as SETAS / W A S D ou toca nos botões
-        </p>
-      </div>
-    </div>
-
-    <!-- ================= PÁGINA 3: VITÓRIA / PRÉMIO ================= -->
-    <div class="pixel-box" id="page3">
-      <div class="animated-pixel-border">
-        
-        <!-- SVG desenhado com grelha de pixel art -->
-        <div class="pixel-heart">
-          <svg viewBox="0 0 16 14" width="100%" height="100%" style="image-rendering: pixelated;">
-            <!-- Sombra escura -->
-            <path d="M2,2 h3 v1 h-3 z M11,2 h3 v1 h-3 z M1,3 h1 v3 h-1 z M14,3 h1 v3 h-1 z M2,6 h1 v2 h-1 z M13,6 h1 v2 h-1 z M3,8 h1 v2 h-1 z M12,8 h1 v2 h-1 z M4,10 h1 v1 h-1 z M11,10 h1 v1 h-1 z M5,11 h1 v1 h-1 z M10,11 h1 v1 h-1 z M6,12 h1 v1 h-1 z M9,12 h1 v1 h-1 z M7,13 h2 v1 h-2 z" fill="#7a0016"/>
-            <!-- Miolo Vermelho Principal -->
-            <path d="M2,3 h4 v4 h-4 z M10,3 h4 v4 h-4 z M2,4 h12 v3 h-12 z M3,7 h10 v2 h-10 z M4,9 h8 v1 h-8 z M5,10 h6 v1 h-6 z M6,11 h4 v1 h-4 z M7,12 h2 v1 h-2 z" fill="#ff2a4b"/>
-            <!-- Brilho Pixel Branco/Rosa -->
-            <rect x="3" y="3" width="2" height="2" fill="#ffffff" />
-            <rect x="11" y="3" width="1" height="1" fill="#ff99a8" />
-          </svg>
+    <div class="game-wrapper">
+        <!-- ================= PÁGINA 1: INTRODUÇÃO ================= -->
+        <div class="pixel-box active" id="page1">
+            <h1>[ MISSÃO CHEGUE NO MEU CORAÇÃO ]</h1>
+            <p>
+                OI, MEU AMOR!<br><br>
+                FIZ UM JOGUINHO PRA VOCÊ 🥹<br><br>
+                O TEU OBJETIVO É SIMPLES:<br>
+                CHEGUE ATÉ MEU CORAÇÃO.
+            </p>
+            <button class="pixel-btn" onclick="startGame()">▶ INICIAR JOGO</button>
         </div>
 
-        <h2 class="final-title">PARABÉNS! ❤️</h2>
-        <p class="final-text">
-         CHEGOU AO DESTINO!<br><br>
-          JA QUE CHEGOU ATE MEU CORAÇÃO MERECE UM PREMIO NAO É?!<br>
-          <br><br>
-          SEU PREMIO É GANHAR VARIOS BEIJOS MEU♥️🫣
-        </p>
-        <button class="pixel-btn" onclick="restartGame()" style="margin-top: 10px;">↺ JOGAR DE NOVO</button>
-      </div>
-    </div>
+        <!-- ================= PÁGINA 2: O LABIRINTO ================= -->
+        <div class="pixel-box" id="page2">
+            <div class="maze-container">
+                <div class="maze-header">
+                    <span>FASE: 01</span>
+                    <span>OBJETIVO: ❤️</span>
+                </div>
+                
+                <canvas id="mazeCanvas" width="330" height="330"></canvas>
 
-  </div>
+                <!-- Controlos no ecrã para telemóvel -->
+                <div class="dpad">
+                    <button class="dpad-btn dpad-up" onclick="movePlayer(0, -1)">▲</button>
+                    <button class="dpad-btn dpad-left" onclick="movePlayer(-1, 0)">◀</button>
+                    <button class="dpad-btn dpad-down" onclick="movePlayer(0, 1)">▼</button>
+                    <button class="dpad-btn dpad-right" onclick="movePlayer(1, 0)">▶</button>
+                </div>
+                
+                <p style="font-size: 0.55rem; color: #8e9bb5; margin: 6px 0 0 0;">
+                    Usa as SETAS / W A S D ou toca nos botões
+                </p>
+            </div>
+        </div>
 
-  <script>
-    /* ============================================================
-       SISTEMA DE SOM RETRÔ (8-BIT VIA WEB AUDIO API)
-       ============================================================ */
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    let audioCtx = null;
-
-    function initAudio() {
-      if (!audioCtx) {
-        audioCtx = new AudioContext();
-      }
-    }
-
-    function playBeep(freq = 440, type = "square", duration = 0.08) {
-      if (!audioCtx) return;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + duration);
-    }
-
-    function playWinSound() {
-      if (!audioCtx) return;
-      const notes = [330, 392, 523, 659, 784, 1046];
-      notes.forEach((freq, idx) => {
-        setTimeout(() => {
-          playBeep(freq, "triangle", 0.18);
-        }, idx * 110);
-      });
-    }
-
-    /* ============================================================
-       CONTROLO DE PÁGINAS
-       ============================================================ */
-    function showPage(pageId) {
-      document.querySelectorAll('.pixel-box').forEach(el => el.classList.remove('active'));
-      document.getElementById(pageId).classList.add('active');
-    }
-
-    function startGame() {
-      initAudio();
-      playBeep(520, "square", 0.12);
-      showPage('page2');
-      resetMazeGame();
-    }
-
-    function restartGame() {
-      playBeep(330, "square", 0.1);
-      showPage('page1');
-    }
-
-    /* ============================================================
-       MOTOR DO LABIRINTO (CANVAS 2D)
-       ============================================================ */
-    const canvas = document.getElementById('mazeCanvas');
-    const ctx = canvas.getContext('2d');
-
-    // 0 = Caminho livre, 1 = Parede
-    // Mapa 11x11 desenhado à medida com caminho garantido
-    const maze = [
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
-      [1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1],
-      [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
-      [1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1],
-      [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1],
-      [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1],
-      [1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-      [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    ];
-
-    const rows = 11;
-    const cols = 11;
-    const tileSize = canvas.width / cols; // 30px cada quadrado
-
-    let player = { x: 1, y: 1 };
-    const goal = { x: 9, y: 9 };
-
-    function resetMazeGame() {
-      player.x = 1;
-      player.y = 1;
-      drawMaze();
-    }
-
-    function drawMaze() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // 1. Desenha as Paredes e o Chão
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const x = c * tileSize;
-          const y = r * tileSize;
-
-          if (maze[r][c] === 1) {
-            // Parede azul escuro com padrão pixel
-            ctx.fillStyle = '#0f1b38';
-            ctx.fillRect(x, y, tileSize, tileSize);
-            ctx.fillStyle = '#1b2d58';
-            ctx.fillRect(x + 2, y + 2, tileSize - 4, tileSize - 4);
-            ctx.fillStyle = '#2d4a8d';
-            ctx.fillRect(x + 4, y + 4, 4, 4);
-          } else {
-            // Chão preto
-            ctx.fillStyle = '#04070e';
-            ctx.fillRect(x, y, tileSize, tileSize);
-          }
-        }
-      }
-
-      // 2. Desenha o Destino (Coração em pixel art no canvas)
-      const gx = goal.x * tileSize;
-      const gy = goal.y * tileSize;
-      ctx.fillStyle = '#ff2a4b';
-      // Mini coração pixel
-      ctx.fillRect(gx + 6, gy + 8, 8, 8);
-      ctx.fillRect(gx + 16, gy + 8, 8, 8);
-      ctx.fillRect(gx + 4, gy + 12, 22, 6);
-      ctx.fillRect(gx + 8, gy + 18, 14, 6);
-      ctx.fillRect(gx + 12, gy + 24, 6, 4);
-      // Ponto de luz branco
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(gx + 8, gy + 10, 4, 4);
-
-      // 3. Desenha o Jogador (Personagem pixel com capuz vermelho)
-      const px = player.x * tileSize;
-      const py = player.y * tileSize;
-      
-      // Corpo / Roupa
-      ctx.fillStyle = '#ff2a4b';
-      ctx.fillRect(px + 6, py + 8, 18, 18);
-      // Rosto
-      ctx.fillStyle = '#ffd1b3';
-      ctx.fillRect(px + 9, py + 11, 12, 10);
-      // Olhos pixel escuros
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(px + 11, py + 14, 2, 4);
-      ctx.fillRect(px + 17, py + 14, 2, 4);
-      // Pés
-      ctx.fillStyle = '#0f1b38';
-      ctx.fillRect(px + 8, py + 24, 5, 4);
-      ctx.fillRect(px + 17, py + 24, 5, 4);
-    }
-
-    function movePlayer(dx, dy) {
-      const newX = player.x + dx;
-      const newY = player.y + dy;
-
-      // Validação de colisão com paredes
-      if (maze[newY] && maze[newY][newX] === 0) {
-        player.x = newX;
-        player.y = newY;
-        playBeep(260, "square", 0.05);
-        drawMaze();
-
-        // Chegou ao destino?
-        if (player.x === goal.x && player.y === goal.y) {
-          playWinSound();
-          setTimeout(() => {
-            showPage('page3');
-          }, 350);
-        }
-      } else {
-        // Som de bloqueio / batida suave
-        playBeep(120, "sawtooth", 0.04);
-      }
-    }
-
-    // Escuta teclas de setas e WASD
-    window.addEventListener('keydown', (e) => {
-      // Só move se a página 2 estiver aberta
-      if (!document.getElementById('page2').classList.contains('active')) return;
-
-      switch(e.key.toLowerCase()) {
-        case 'arrowup':
-        case 'w':
-          e.preventDefault();
-          movePlayer(0, -1);
-          break;
-        case 'arrowdown':
-        case 's':
-          e.preventDefault();
-          movePlayer(0, 1);
-          break;
-        case 'arrowleft':
-        case 'a':
-          e.preventDefault();
-          movePlayer(-1, 0);
-          break;
-        case 'arrowright':
-        case 'd':
-          e.preventDefault();
-          movePlayer(1, 0);
-          break;
-      }
-    });
-
-    // Iniciar desenho do canvas
-    drawMaze();
-  </script>
-</body>
-</html>
+        <!-- ================= PÁGINA 3: VITÓRIA / PRÉMIO ================= -->
+        <div class="pixel-box" id="page3">
+            <div class="animated-pixel-border">
+                <!-- SVG desenhado com grelha de pixel art -->
+                <div class="pixel-heart">
+                    <svg viewBox="0 0 16 14" width="100%" height="100%" style="image-rendering: pixelated;">
+                        <!-- Sombra escura -->
