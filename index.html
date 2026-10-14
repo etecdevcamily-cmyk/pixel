@@ -28,8 +28,7 @@
       display: grid;
       place-items: center;
       color: var(--text);
-      background:
-        radial-gradient(ellipse at center, #142a4b 0%, var(--bg) 72%);
+      background: radial-gradient(ellipse at center, #142a4b 0%, var(--bg) 72%);
       font-family: "Courier New", monospace;
       text-align: center;
     }
@@ -57,18 +56,30 @@
     }
 
     @keyframes appear {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-    h1, h2 {
+    h1,
+    h2 {
       color: var(--red);
       line-height: 1.5;
       text-shadow: 3px 3px 0 #030812;
     }
 
-    h1 { font-size: clamp(19px, 5vw, 27px); }
-    h2 { font-size: clamp(17px, 4.5vw, 23px); }
+    h1 {
+      font-size: clamp(19px, 5vw, 27px);
+    }
+
+    h2 {
+      font-size: clamp(17px, 4.5vw, 23px);
+    }
 
     p {
       color: var(--muted);
@@ -139,7 +150,7 @@
       font-size: 20px;
       cursor: pointer;
 
-      /* Impede o zoom por toques repetidos apenas nos controlos. */
+      /* Evita o zoom acidental ao tocar várias vezes nos controlos. */
       touch-action: none;
       -webkit-user-select: none;
       user-select: none;
@@ -152,10 +163,25 @@
       box-shadow: none;
     }
 
-    .up { grid-column: 2; grid-row: 1; }
-    .left { grid-column: 1; grid-row: 2; }
-    .down { grid-column: 2; grid-row: 2; }
-    .right { grid-column: 3; grid-row: 2; }
+    .up {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .left {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    .down {
+      grid-column: 2;
+      grid-row: 2;
+    }
+
+    .right {
+      grid-column: 3;
+      grid-row: 2;
+    }
 
     .win-frame {
       padding: 26px 16px;
@@ -182,12 +208,22 @@
       animation: heartbeat 800ms steps(2, end) infinite;
     }
 
-    .heart span { background: transparent; }
-    .heart .on { background: var(--red); }
-    .heart .shine { background: #ff9aaa; }
+    .heart span {
+      background: transparent;
+    }
+
+    .heart .on {
+      background: var(--red);
+    }
+
+    .heart .shine {
+      background: #ff9aaa;
+    }
 
     @keyframes heartbeat {
-      50% { transform: scale(1.08); }
+      50% {
+        transform: scale(1.08);
+      }
     }
 
     .final-message {
@@ -197,12 +233,19 @@
     }
 
     @media (max-width: 380px) {
-      body { padding: 14px; }
-      .page { padding: 22px 14px; }
+      body {
+        padding: 14px;
+      }
+
+      .page {
+        padding: 22px 14px;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
+      *,
+      *::before,
+      *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
       }
@@ -212,6 +255,7 @@
 
 <body>
   <main class="game">
+    <!-- Página 1: introdução -->
     <section class="page active" id="page1" aria-labelledby="title">
       <h1 id="title">[ MISSÃO DO CORAÇÃO ]</h1>
       <p>
@@ -223,37 +267,65 @@
       </button>
     </section>
 
+    <!-- Página 2: labirinto -->
     <section class="page" id="page2" aria-label="Jogo do labirinto">
       <div class="maze-info">
         <span>FASE 01</span>
         <span>DESTINO: ♥</span>
       </div>
 
-      <canvas id="maze" width="330" height="330"
-        aria-label="Labirinto. Leva a personagem vermelha até ao coração.">
-      </canvas>
+      <canvas
+        id="maze"
+        width="330"
+        height="330"
+        aria-label="Labirinto. Leva a personagem vermelha até ao coração."
+      ></canvas>
 
       <p class="instructions">Usa as setas, WASD ou os botões abaixo.</p>
 
       <div class="controls" aria-label="Controlos do labirinto">
-        <button class="direction up" type="button" aria-label="Cima"
-          data-dx="0" data-dy="-1">▲</button>
-        <button class="direction left" type="button" aria-label="Esquerda"
-          data-dx="-1" data-dy="0">◀</button>
-        <button class="direction down" type="button" aria-label="Baixo"
-          data-dx="0" data-dy="1">▼</button>
-        <button class="direction right" type="button" aria-label="Direita"
-          data-dx="1" data-dy="0">▶</button>
+        <button
+          class="direction up"
+          type="button"
+          aria-label="Cima"
+          data-dx="0"
+          data-dy="-1"
+        >▲</button>
+
+        <button
+          class="direction left"
+          type="button"
+          aria-label="Esquerda"
+          data-dx="-1"
+          data-dy="0"
+        >◀</button>
+
+        <button
+          class="direction down"
+          type="button"
+          aria-label="Baixo"
+          data-dx="0"
+          data-dy="1"
+        >▼</button>
+
+        <button
+          class="direction right"
+          type="button"
+          aria-label="Direita"
+          data-dx="1"
+          data-dy="0"
+        >▶</button>
       </div>
 
       <p id="gameStatus" class="instructions" aria-live="polite">
-        Encontre o coração♥️
+        Encontre o coração ♥️
       </p>
     </section>
 
+    <!-- Página 3: final -->
     <section class="page" id="page3" aria-labelledby="finalTitle">
       <div class="win-frame">
-        <h2 id="finalTitle">PARABÉNS!🎉</h2>
+        <h2 id="finalTitle">PARABÉNS! 🎉</h2>
 
         <div class="heart" aria-label="Coração em pixel art" role="img">
           <span></span><span class="on"></span><span class="on"></span><span></span><span></span><span class="on"></span><span class="on"></span><span></span><span></span>
@@ -268,7 +340,7 @@
 
         <p class="final-message">
           Chegaste ao destino!<br><br>
-         Se você chegou até o final, é por que esta no tédio igual a criadora desse site🤣
+          Se você chegou até o final, é porque está no tédio igual à criadora desse site 🤣
         </p>
 
         <button class="pixel-button" id="restartButton" type="button">
@@ -283,6 +355,56 @@
     const canvas = document.getElementById("maze");
     const ctx = canvas.getContext("2d");
     const statusText = document.getElementById("gameStatus");
+
+    // Som 8-bit gerado pelo navegador, sem ficheiros externos.
+    let audioContext = null;
+
+    function unlockAudio() {
+      const AudioContextClass =
+        window.AudioContext || window.webkitAudioContext;
+
+      if (!AudioContextClass) return;
+
+      if (!audioContext) {
+        audioContext = new AudioContextClass();
+      }
+
+      if (audioContext.state === "suspended") {
+        audioContext.resume().catch(() => {});
+      }
+    }
+
+    function playMoveSound(dx, dy) {
+      if (!audioContext) return;
+
+      if (audioContext.state === "suspended") {
+        audioContext.resume().catch(() => {});
+      }
+
+      const now = audioContext.currentTime;
+      const oscillator = audioContext.createOscillator();
+      const volume = audioContext.createGain();
+
+      // O tom muda ligeiramente conforme a direção do movimento.
+      let frequency = 500;
+      if (dy < 0) frequency = 620;
+      if (dy > 0) frequency = 440;
+      if (dx < 0) frequency = 520;
+      if (dx > 0) frequency = 680;
+
+      oscillator.type = "square";
+      oscillator.frequency.setValueAtTime(frequency, now);
+
+      volume.gain.setValueAtTime(0.0001, now);
+      volume.gain.exponentialRampToValueAtTime(0.06, now + 0.008);
+      volume.gain.exponentialRampToValueAtTime(0.0001, now + 0.075);
+
+      oscillator.connect(volume);
+      volume.connect(audioContext.destination);
+
+      oscillator.start(now);
+      oscillator.stop(now + 0.08);
+    }
 
     // 1 = parede, 0 = caminho livre
     const maze = [
@@ -320,6 +442,7 @@
           if (maze[y][x] === 1) {
             ctx.fillStyle = "#102344";
             ctx.fillRect(px, py, cell, cell);
+
             ctx.fillStyle = "#244878";
             ctx.fillRect(px + 3, py + 3, cell - 6, cell - 6);
           } else {
@@ -332,6 +455,7 @@
       // Coração de destino em pixel art
       const gx = goal.x * cell;
       const gy = goal.y * cell;
+
       ctx.fillStyle = "#ff304f";
       ctx.fillRect(gx + 7, gy + 8, 7, 7);
       ctx.fillRect(gx + 16, gy + 8, 7, 7);
@@ -342,10 +466,13 @@
       // Personagem
       const px = player.x * cell;
       const py = player.y * cell;
+
       ctx.fillStyle = "#ff304f";
       ctx.fillRect(px + 7, py + 6, 16, 18);
+
       ctx.fillStyle = "#ffd6dc";
       ctx.fillRect(px + 10, py + 9, 10, 8);
+
       ctx.fillStyle = "#081326";
       ctx.fillRect(px + 12, py + 11, 2, 3);
       ctx.fillRect(px + 17, py + 11, 2, 3);
@@ -359,51 +486,77 @@
       const nextX = player.x + dx;
       const nextY = player.y + dy;
 
+      // Não move nem toca som se a personagem bater numa parede.
       if (maze[nextY]?.[nextX] !== 0) return;
 
       player = { x: nextX, y: nextY };
+      playMoveSound(dx, dy);
       drawMaze();
 
       if (player.x === goal.x && player.y === goal.y) {
         gameWon = true;
         statusText.textContent = "Destino encontrado!";
-        window.setTimeout(() => showPage("page3"), 350);
+
+        window.setTimeout(() => {
+          showPage("page3");
+        }, 350);
       }
     }
 
     function startGame() {
+      // O clique inicial permite ativar áudio nos navegadores móveis.
+      unlockAudio();
+
       player = { x: 1, y: 1 };
       gameWon = false;
-      statusText.textContent = "Encontra o caminho até ao coração!";
+      statusText.textContent = "Encontre o coração ♥️";
+
       drawMaze();
       showPage("page2");
     }
 
-    document.getElementById("startButton").addEventListener("click", startGame);
+    document
+      .getElementById("startButton")
+      .addEventListener("click", startGame);
 
-    document.getElementById("restartButton").addEventListener("click", () => {
-      showPage("page1");
-    });
+    document
+      .getElementById("restartButton")
+      .addEventListener("click", () => {
+        showPage("page1");
+      });
 
     document.querySelectorAll(".direction").forEach(button => {
       button.addEventListener("click", () => {
-        movePlayer(Number(button.dataset.dx), Number(button.dataset.dy));
+        movePlayer(
+          Number(button.dataset.dx),
+          Number(button.dataset.dy)
+        );
       });
 
-      // Compatibilidade extra para navegadores que ampliam com duplo toque.
-      button.addEventListener("dblclick", event => event.preventDefault());
+      // Evita zoom por duplo toque em alguns navegadores móveis.
+      button.addEventListener("dblclick", event => {
+        event.preventDefault();
+      });
     });
 
     window.addEventListener("keydown", event => {
       const key = event.key.toLowerCase();
+
       const moves = {
-        arrowup: [0, -1], w: [0, -1],
-        arrowdown: [0, 1], s: [0, 1],
-        arrowleft: [-1, 0], a: [-1, 0],
-        arrowright: [1, 0], d: [1, 0]
+        arrowup: [0, -1],
+        w: [0, -1],
+        arrowdown: [0, 1],
+        s: [0, 1],
+        arrowleft: [-1, 0],
+        a: [-1, 0],
+        arrowright: [1, 0],
+        d: [1, 0]
       };
 
-      if (moves[key] && document.getElementById("page2").classList.contains("active")) {
+      if (
+        moves[key] &&
+        document.getElementById("page2").classList.contains("active")
+      ) {
         event.preventDefault();
         movePlayer(...moves[key]);
       }
