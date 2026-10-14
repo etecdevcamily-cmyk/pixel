@@ -2,537 +2,414 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Missão Pixel - Jogo do Labirinto</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#081326">
+  <title>Missão do Coração — Labirinto Pixel</title>
+
   <style>
     :root {
-      --bg-dark: #070b14;
-      --blue-deep: #0f1b38;
-      --blue-mid: #1b2d58;
-      --blue-light: #2d4a8d;
-      --red-bright: #ff2a4b;
-      --red-deep: #b3102c;
-      --red-glow: rgba(255, 42, 75, 0.45);
-      --white: #ffffff;
-      --pixel-size: 4px;
+      --bg: #081326;
+      --panel: #102344;
+      --blue: #244878;
+      --red: #ff304f;
+      --red-dark: #9d1530;
+      --text: #f3f5ff;
+      --muted: #bdc9df;
     }
 
     * {
       box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      user-select: none;
-      -webkit-user-select: none;
     }
 
     body {
-      background-color: var(--bg-dark);
-      background-image: 
-        radial-gradient(circle at 50% 30%, #162244 0%, var(--bg-dark) 80%);
-      color: var(--white);
-      font-family: 'Press Start 2P', monospace;
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      overflow-x: hidden;
-      image-rendering: pixelated;
-    }
-
-    /* Linhas de scanline CRT retrô sutis */
-    body::after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(
-        rgba(18, 16, 16, 0) 50%, 
-        rgba(0, 0, 0, 0.25) 50%
-      );
-      background-size: 100% 4px;
-      pointer-events: none;
-      z-index: 99;
-      opacity: 0.6;
-    }
-
-    .game-wrapper {
-      width: 100%;
-      max-width: 580px;
-      position: relative;
-      z-index: 10;
-    }
-
-    /* Estilo de moldura Pixel Art */
-    .pixel-box {
-      background-color: var(--blue-deep);
-      border: 4px solid #000;
-      box-shadow: 
-        0 0 0 4px var(--blue-mid),
-        0 0 0 8px #000,
-        0 12px 30px rgba(0, 0, 0, 0.8);
-      padding: 32px 24px;
+      margin: 0;
+      padding: 20px;
+      display: grid;
+      place-items: center;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at center, #142a4b 0%, var(--bg) 72%);
+      font-family: "Courier New", monospace;
       text-align: center;
+    }
+
+    button {
+      color: inherit;
+      font: inherit;
+    }
+
+    .game {
+      width: min(100%, 540px);
+    }
+
+    .page {
       display: none;
-      animation: popIn 0.25s steps(3);
+      padding: 28px 20px;
+      background: var(--panel);
+      border: 5px solid #030812;
+      box-shadow: 0 0 0 5px var(--blue), 8px 8px 0 #030812;
     }
 
-    .pixel-box.active {
+    .page.active {
       display: block;
+      animation: appear 220ms steps(4, end);
     }
 
-    @keyframes popIn {
-      from { transform: scale(0.95); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    h1 {
-      font-size: 1.25rem;
-      color: var(--red-bright);
-      line-height: 1.6;
-      margin-bottom: 24px;
-      text-shadow: 3px 3px 0px #000, -2px -2px 0px var(--blue-mid);
+    h1, h2 {
+      color: var(--red);
+      line-height: 1.5;
+      text-shadow: 3px 3px 0 #030812;
     }
+
+    h1 { font-size: clamp(19px, 5vw, 27px); }
+    h2 { font-size: clamp(17px, 4.5vw, 23px); }
 
     p {
-      font-size: 0.72rem;
-      line-height: 1.9;
-      color: #e0e6f5;
-      margin-bottom: 24px;
-      text-shadow: 2px 2px 0px #000;
+      color: var(--muted);
+      font-size: clamp(14px, 3.5vw, 17px);
+      line-height: 1.8;
     }
 
-    /* Botão estilo 8-bit */
-    .pixel-btn {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.75rem;
-      background: var(--red-bright);
-      color: #fff;
-      border: 4px solid #000;
-      padding: 16px 24px;
+    .pixel-button {
+      margin-top: 14px;
+      padding: 14px 18px;
+      border: 4px solid #030812;
+      background: var(--red);
+      box-shadow: inset -4px -4px 0 var(--red-dark), 4px 4px 0 #030812;
+      font-weight: bold;
       cursor: pointer;
-      box-shadow: 
-        inset -4px -4px 0px var(--red-deep),
-        inset 4px 4px 0px #ff7b92,
-        4px 4px 0px #000;
-      transition: transform 0.08s steps(2);
-      text-transform: uppercase;
-      display: inline-block;
     }
 
-    .pixel-btn:hover {
-      background: #ff3e5c;
+    .pixel-button:active {
+      transform: translate(3px, 3px);
+      box-shadow: inset -2px -2px 0 var(--red-dark);
     }
 
-    .pixel-btn:active {
-      transform: translate(4px, 4px);
-      box-shadow: 
-        inset 4px 4px 0px var(--red-deep),
-        0px 0px 0px #000;
+    .pixel-button:focus-visible,
+    .direction:focus-visible {
+      outline: 3px dashed white;
+      outline-offset: 4px;
     }
 
-    /* ============================================================
-       PÁGINA 2: O LABIRINTO
-       ============================================================ */
-    .maze-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .maze-header {
-      width: 100%;
+    .maze-info {
       display: flex;
       justify-content: space-between;
-      font-size: 0.65rem;
-      color: var(--red-bright);
-      margin-bottom: 8px;
+      gap: 12px;
+      margin-bottom: 16px;
+      color: var(--red);
+      font-size: 12px;
     }
 
-    #mazeCanvas {
-      background-color: #000;
-      border: 4px solid #000;
-      box-shadow: 0 0 0 4px var(--red-bright);
-      image-rendering: pixelated;
-      max-width: 100%;
+    canvas {
+      display: block;
+      width: min(100%, 330px);
       height: auto;
+      margin: 0 auto;
+      border: 4px solid #030812;
+      box-shadow: 0 0 0 4px var(--red);
+      image-rendering: pixelated;
     }
 
-    /* D-PAD para telemóveis / cliques */
-    .dpad {
-      margin-top: 14px;
+    .instructions {
+      margin: 18px 0 8px;
+      font-size: 12px;
+    }
+
+    .controls {
+      width: max-content;
+      margin: 16px auto 4px;
       display: grid;
-      grid-template-columns: repeat(3, 50px);
-      grid-template-rows: repeat(2, 45px);
-      gap: 6px;
-      justify-content: center;
+      grid-template-columns: repeat(3, 54px);
+      grid-template-rows: repeat(2, 48px);
+      gap: 7px;
     }
 
-    .dpad-btn {
-      background: var(--blue-mid);
-      border: 3px solid #000;
-      color: var(--white);
-      font-family: inherit;
-      font-size: 0.9rem;
+    .direction {
+      display: grid;
+      place-items: center;
+      border: 3px solid #030812;
+      background: var(--blue);
+      box-shadow: inset 2px 2px 0 #41679a, 3px 3px 0 #030812;
+      font-size: 20px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 
-        inset 2px 2px 0px var(--blue-light),
-        inset -2px -2px 0px #091024,
-        2px 2px 0px #000;
+
+      /* Impede o zoom por toques repetidos apenas nos controlos. */
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .dpad-btn:active {
+    .direction:active {
+      background: var(--red-dark);
       transform: translate(2px, 2px);
       box-shadow: none;
-      background: var(--red-deep);
     }
 
-    .dpad-up { grid-column: 2; grid-row: 1; }
-    .dpad-left { grid-column: 1; grid-row: 2; }
-    .dpad-down { grid-column: 2; grid-row: 2; }
-    .dpad-right { grid-column: 3; grid-row: 2; }
+    .up { grid-column: 2; grid-row: 1; }
+    .left { grid-column: 1; grid-row: 2; }
+    .down { grid-column: 2; grid-row: 2; }
+    .right { grid-column: 3; grid-row: 2; }
 
-    /* ============================================================
-       PÁGINA 3: BORDA ANIMADA E CORAÇÃO EM PIXEL
-       ============================================================ */
-    .animated-pixel-border {
-      position: relative;
-      background-color: var(--blue-deep);
-      padding: 36px 24px;
-      border: 6px solid #000;
-      box-shadow: 0 0 0 6px var(--red-bright);
-      animation: borderFlash 1.2s infinite steps(2);
+    .win-frame {
+      padding: 26px 16px;
+      border: 5px solid var(--red);
+      box-shadow: 0 0 0 5px #030812, 0 0 0 10px var(--blue);
+      animation: border-pulse 900ms steps(2, end) infinite;
     }
 
-    @keyframes borderFlash {
-      0% {
-        box-shadow: 
-          0 0 0 6px var(--red-bright),
-          0 0 24px var(--red-glow);
-        border-color: var(--blue-mid);
-      }
+    @keyframes border-pulse {
       50% {
-        box-shadow: 
-          0 0 0 6px var(--blue-light),
-          0 0 24px rgba(45, 74, 141, 0.6);
-        border-color: var(--red-deep);
-      }
-      100% {
-        box-shadow: 
-          0 0 0 6px var(--red-bright),
-          0 0 24px var(--red-glow);
-        border-color: var(--blue-mid);
+        border-color: var(--blue);
+        box-shadow: 0 0 0 5px #030812, 0 0 0 10px var(--red);
       }
     }
 
-    /* Coração em Pixel Art Puro */
-    .pixel-heart {
-      width: 140px;
-      height: 120px;
-      margin: 20px auto 28px auto;
-      position: relative;
-      animation: heartbeat 0.8s infinite steps(2);
+    .heart {
+      width: 144px;
+      height: 128px;
+      margin: 22px auto;
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      gap: 3px;
+      animation: heartbeat 800ms steps(2, end) infinite;
     }
+
+    .heart span { background: transparent; }
+    .heart .on { background: var(--red); }
+    .heart .shine { background: #ff9aaa; }
 
     @keyframes heartbeat {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.12); }
-      100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
     }
 
-    .final-title {
-      font-size: 1.15rem;
-      color: var(--red-bright);
-      margin-bottom: 20px;
+    .final-message {
+      max-width: 380px;
+      margin: 0 auto;
+      color: var(--text);
     }
 
-    .final-text {
-      font-size: 0.72rem;
-      line-height: 2;
-      color: #fff;
+    @media (max-width: 380px) {
+      body { padding: 14px; }
+      .page { padding: 22px 14px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+      }
     }
   </style>
 </head>
+
 <body>
-
-  <div class="game-wrapper">
-
-    <!-- ================= PÁGINA 1: INTRODUÇÃO ================= -->
-    <div class="pixel-box active" id="page1">
-      <h1>[ MISSÃO CHEGUE NO MEU CORAÇÃO ]</h1>
+  <main class="game">
+    <section class="page active" id="page1" aria-labelledby="title">
+      <h1 id="title">[ MISSÃO DO CORAÇÃO ]</h1>
       <p>
-        OI, MEU AMOR!<br><br>
-        FIZ UM JOGUINHO PRA VOCÊ🥹<br><br>
-        O TEU OBJETIVO É SIMPLES:<br>
-        CHEGUE ATÉ MEU CORAÇÃO.
+        Olá! Preparei um pequeno desafio para ti.<br><br>
+        Atravessa o labirinto, encontra o coração e descobre a mensagem final.
       </p>
-      <button class="pixel-btn" onclick="startGame()">▶ INICIAR JOGO</button>
-    </div>
+      <button class="pixel-button" id="startButton" type="button">
+        ▶ Iniciar jogo
+      </button>
+    </section>
 
-    <!-- ================= PÁGINA 2: O LABIRINTO ================= -->
-    <div class="pixel-box" id="page2">
-      <div class="maze-container">
-        <div class="maze-header">
-          <span>FASE: 01</span>
-          <span>OBJETIVO: ❤️</span>
-        </div>
-        
-        <canvas id="mazeCanvas" width="330" height="330"></canvas>
-
-        <!-- Controlos no ecrã para telemóvel -->
-        <div class="dpad">
-          <button class="dpad-btn dpad-up" onclick="movePlayer(0, -1)">▲</button>
-          <button class="dpad-btn dpad-left" onclick="movePlayer(-1, 0)">◀</button>
-          <button class="dpad-btn dpad-down" onclick="movePlayer(0, 1)">▼</button>
-          <button class="dpad-btn dpad-right" onclick="movePlayer(1, 0)">▶</button>
-        </div>
-        <p style="font-size: 0.55rem; color: #8e9bb5; margin: 6px 0 0 0;">
-          Usa as SETAS / W A S D ou toca nos botões
-        </p>
+    <section class="page" id="page2" aria-label="Jogo do labirinto">
+      <div class="maze-info">
+        <span>FASE 01</span>
+        <span>DESTINO: ♥</span>
       </div>
-    </div>
 
-    <!-- ================= PÁGINA 3: VITÓRIA / PRÉMIO ================= -->
-    <div class="pixel-box" id="page3">
-      <div class="animated-pixel-border">
-        
-        <!-- SVG desenhado com grelha de pixel art -->
-        <div class="pixel-heart">
-          <svg viewBox="0 0 16 14" width="100%" height="100%" style="image-rendering: pixelated;">
-            <!-- Sombra escura -->
-            <path d="M2,2 h3 v1 h-3 z M11,2 h3 v1 h-3 z M1,3 h1 v3 h-1 z M14,3 h1 v3 h-1 z M2,6 h1 v2 h-1 z M13,6 h1 v2 h-1 z M3,8 h1 v2 h-1 z M12,8 h1 v2 h-1 z M4,10 h1 v1 h-1 z M11,10 h1 v1 h-1 z M5,11 h1 v1 h-1 z M10,11 h1 v1 h-1 z M6,12 h1 v1 h-1 z M9,12 h1 v1 h-1 z M7,13 h2 v1 h-2 z" fill="#7a0016"/>
-            <!-- Miolo Vermelho Principal -->
-            <path d="M2,3 h4 v4 h-4 z M10,3 h4 v4 h-4 z M2,4 h12 v3 h-12 z M3,7 h10 v2 h-10 z M4,9 h8 v1 h-8 z M5,10 h6 v1 h-6 z M6,11 h4 v1 h-4 z M7,12 h2 v1 h-2 z" fill="#ff2a4b"/>
-            <!-- Brilho Pixel Branco/Rosa -->
-            <rect x="3" y="3" width="2" height="2" fill="#ffffff" />
-            <rect x="11" y="3" width="1" height="1" fill="#ff99a8" />
-          </svg>
+      <canvas id="maze" width="330" height="330"
+        aria-label="Labirinto. Leva a personagem vermelha até ao coração.">
+      </canvas>
+
+      <p class="instructions">Usa as setas, WASD ou os botões abaixo.</p>
+
+      <div class="controls" aria-label="Controlos do labirinto">
+        <button class="direction up" type="button" aria-label="Cima"
+          data-dx="0" data-dy="-1">▲</button>
+        <button class="direction left" type="button" aria-label="Esquerda"
+          data-dx="-1" data-dy="0">◀</button>
+        <button class="direction down" type="button" aria-label="Baixo"
+          data-dx="0" data-dy="1">▼</button>
+        <button class="direction right" type="button" aria-label="Direita"
+          data-dx="1" data-dy="0">▶</button>
+      </div>
+
+      <p id="gameStatus" class="instructions" aria-live="polite">
+        Encontra o caminho até ao coração!
+      </p>
+    </section>
+
+    <section class="page" id="page3" aria-labelledby="finalTitle">
+      <div class="win-frame">
+        <h2 id="finalTitle">CONSEGUISTE!</h2>
+
+        <div class="heart" aria-label="Coração em pixel art" role="img">
+          <span></span><span class="on"></span><span class="on"></span><span></span><span></span><span class="on"></span><span class="on"></span><span></span><span></span>
+          <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span>
+          <span class="on"></span><span class="shine"></span><span class="on"></span><span class="on"></span><span></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span>
+          <span></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span>
+          <span></span><span></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span>
+          <span></span><span></span><span></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span class="on"></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
         </div>
 
-        <h2 class="final-title">PARABÉNS! ❤️</h2>
-        <p class="final-text">
-         CHEGOU AO DESTINO!<br><br>
-          JA QUE CHEGOU ATE MEU CORAÇÃO MERECE UM PREMIO NAO É?!<br>
-          <br><br>
-          SEU PREMIO É GANHAR VARIOS BEIJOS MEU♥️🫣
+        <p class="final-message">
+          Chegaste ao destino!<br><br>
+          O melhor caminho é aquele que nos leva às pessoas de quem gostamos.
+          ❤️
         </p>
-        <button class="pixel-btn" onclick="restartGame()" style="margin-top: 10px;">↺ JOGAR DE NOVO</button>
-      </div>
-    </div>
 
-  </div>
+        <button class="pixel-button" id="restartButton" type="button">
+          ↺ Jogar novamente
+        </button>
+      </div>
+    </section>
+  </main>
 
   <script>
-    /* ============================================================
-       SISTEMA DE SOM RETRÔ (8-BIT VIA WEB AUDIO API)
-       ============================================================ */
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    let audioCtx = null;
+    const pages = [...document.querySelectorAll(".page")];
+    const canvas = document.getElementById("maze");
+    const ctx = canvas.getContext("2d");
+    const statusText = document.getElementById("gameStatus");
 
-    function initAudio() {
-      if (!audioCtx) {
-        audioCtx = new AudioContext();
-      }
-    }
-
-    function playBeep(freq = 440, type = "square", duration = 0.08) {
-      if (!audioCtx) return;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + duration);
-    }
-
-    function playWinSound() {
-      if (!audioCtx) return;
-      const notes = [330, 392, 523, 659, 784, 1046];
-      notes.forEach((freq, idx) => {
-        setTimeout(() => {
-          playBeep(freq, "triangle", 0.18);
-        }, idx * 110);
-      });
-    }
-
-    /* ============================================================
-       CONTROLO DE PÁGINAS
-       ============================================================ */
-    function showPage(pageId) {
-      document.querySelectorAll('.pixel-box').forEach(el => el.classList.remove('active'));
-      document.getElementById(pageId).classList.add('active');
-    }
-
-    function startGame() {
-      initAudio();
-      playBeep(520, "square", 0.12);
-      showPage('page2');
-      resetMazeGame();
-    }
-
-    function restartGame() {
-      playBeep(330, "square", 0.1);
-      showPage('page1');
-    }
-
-    /* ============================================================
-       MOTOR DO LABIRINTO (CANVAS 2D)
-       ============================================================ */
-    const canvas = document.getElementById('mazeCanvas');
-    const ctx = canvas.getContext('2d');
-
-    // 0 = Caminho livre, 1 = Parede
-    // Mapa 11x11 desenhado à medida com caminho garantido
+    // 1 = parede, 0 = caminho livre
     const maze = [
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
-      [1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1],
-      [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
-      [1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1],
-      [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1],
-      [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1],
-      [1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-      [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+      [1,1,1,1,1,1,1,1,1,1,1],
+      [1,0,0,0,1,0,0,0,0,0,1],
+      [1,1,1,0,1,0,1,1,1,0,1],
+      [1,0,0,0,0,0,1,0,1,0,1],
+      [1,0,1,1,1,1,1,0,1,0,1],
+      [1,0,1,0,0,0,0,0,0,0,1],
+      [1,0,1,0,1,1,1,1,1,0,1],
+      [1,0,0,0,1,0,0,0,1,0,1],
+      [1,1,1,0,1,0,1,0,1,0,1],
+      [1,0,0,0,0,0,1,0,0,0,1],
+      [1,1,1,1,1,1,1,1,1,1,1]
     ];
 
-    const rows = 11;
-    const cols = 11;
-    const tileSize = canvas.width / cols; // 30px cada quadrado
-
-    let player = { x: 1, y: 1 };
+    const cell = canvas.width / maze.length;
     const goal = { x: 9, y: 9 };
+    let player = { x: 1, y: 1 };
+    let gameWon = false;
 
-    function resetMazeGame() {
-      player.x = 1;
-      player.y = 1;
-      drawMaze();
+    function showPage(id) {
+      pages.forEach(page => page.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
     }
 
     function drawMaze() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 1. Desenha as Paredes e o Chão
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const x = c * tileSize;
-          const y = r * tileSize;
+      for (let y = 0; y < maze.length; y++) {
+        for (let x = 0; x < maze[y].length; x++) {
+          const px = x * cell;
+          const py = y * cell;
 
-          if (maze[r][c] === 1) {
-            // Parede azul escuro com padrão pixel
-            ctx.fillStyle = '#0f1b38';
-            ctx.fillRect(x, y, tileSize, tileSize);
-            ctx.fillStyle = '#1b2d58';
-            ctx.fillRect(x + 2, y + 2, tileSize - 4, tileSize - 4);
-            ctx.fillStyle = '#2d4a8d';
-            ctx.fillRect(x + 4, y + 4, 4, 4);
+          if (maze[y][x] === 1) {
+            ctx.fillStyle = "#102344";
+            ctx.fillRect(px, py, cell, cell);
+            ctx.fillStyle = "#244878";
+            ctx.fillRect(px + 3, py + 3, cell - 6, cell - 6);
           } else {
-            // Chão preto
-            ctx.fillStyle = '#04070e';
-            ctx.fillRect(x, y, tileSize, tileSize);
+            ctx.fillStyle = "#050b16";
+            ctx.fillRect(px, py, cell, cell);
           }
         }
       }
 
-      // 2. Desenha o Destino (Coração em pixel art no canvas)
-      const gx = goal.x * tileSize;
-      const gy = goal.y * tileSize;
-      ctx.fillStyle = '#ff2a4b';
-      // Mini coração pixel
-      ctx.fillRect(gx + 6, gy + 8, 8, 8);
-      ctx.fillRect(gx + 16, gy + 8, 8, 8);
-      ctx.fillRect(gx + 4, gy + 12, 22, 6);
-      ctx.fillRect(gx + 8, gy + 18, 14, 6);
-      ctx.fillRect(gx + 12, gy + 24, 6, 4);
-      // Ponto de luz branco
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(gx + 8, gy + 10, 4, 4);
+      // Coração de destino em pixel art
+      const gx = goal.x * cell;
+      const gy = goal.y * cell;
+      ctx.fillStyle = "#ff304f";
+      ctx.fillRect(gx + 7, gy + 8, 7, 7);
+      ctx.fillRect(gx + 16, gy + 8, 7, 7);
+      ctx.fillRect(gx + 5, gy + 13, 20, 7);
+      ctx.fillRect(gx + 9, gy + 20, 12, 5);
+      ctx.fillRect(gx + 13, gy + 25, 4, 3);
 
-      // 3. Desenha o Jogador (Personagem pixel com capuz vermelho)
-      const px = player.x * tileSize;
-      const py = player.y * tileSize;
-      
-      // Corpo / Roupa
-      ctx.fillStyle = '#ff2a4b';
-      ctx.fillRect(px + 6, py + 8, 18, 18);
-      // Rosto
-      ctx.fillStyle = '#ffd1b3';
-      ctx.fillRect(px + 9, py + 11, 12, 10);
-      // Olhos pixel escuros
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(px + 11, py + 14, 2, 4);
-      ctx.fillRect(px + 17, py + 14, 2, 4);
-      // Pés
-      ctx.fillStyle = '#0f1b38';
-      ctx.fillRect(px + 8, py + 24, 5, 4);
-      ctx.fillRect(px + 17, py + 24, 5, 4);
+      // Personagem
+      const px = player.x * cell;
+      const py = player.y * cell;
+      ctx.fillStyle = "#ff304f";
+      ctx.fillRect(px + 7, py + 6, 16, 18);
+      ctx.fillStyle = "#ffd6dc";
+      ctx.fillRect(px + 10, py + 9, 10, 8);
+      ctx.fillStyle = "#081326";
+      ctx.fillRect(px + 12, py + 11, 2, 3);
+      ctx.fillRect(px + 17, py + 11, 2, 3);
     }
 
     function movePlayer(dx, dy) {
-      const newX = player.x + dx;
-      const newY = player.y + dy;
+      if (!document.getElementById("page2").classList.contains("active") || gameWon) {
+        return;
+      }
 
-      // Validação de colisão com paredes
-      if (maze[newY] && maze[newY][newX] === 0) {
-        player.x = newX;
-        player.y = newY;
-        playBeep(260, "square", 0.05);
-        drawMaze();
+      const nextX = player.x + dx;
+      const nextY = player.y + dy;
 
-        // Chegou ao destino?
-        if (player.x === goal.x && player.y === goal.y) {
-          playWinSound();
-          setTimeout(() => {
-            showPage('page3');
-          }, 350);
-        }
-      } else {
-        // Som de bloqueio / batida suave
-        playBeep(120, "sawtooth", 0.04);
+      if (maze[nextY]?.[nextX] !== 0) return;
+
+      player = { x: nextX, y: nextY };
+      drawMaze();
+
+      if (player.x === goal.x && player.y === goal.y) {
+        gameWon = true;
+        statusText.textContent = "Destino encontrado!";
+        window.setTimeout(() => showPage("page3"), 350);
       }
     }
 
-    // Escuta teclas de setas e WASD
-    window.addEventListener('keydown', (e) => {
-      // Só move se a página 2 estiver aberta
-      if (!document.getElementById('page2').classList.contains('active')) return;
+    function startGame() {
+      player = { x: 1, y: 1 };
+      gameWon = false;
+      statusText.textContent = "Encontra o caminho até ao coração!";
+      drawMaze();
+      showPage("page2");
+    }
 
-      switch(e.key.toLowerCase()) {
-        case 'arrowup':
-        case 'w':
-          e.preventDefault();
-          movePlayer(0, -1);
-          break;
-        case 'arrowdown':
-        case 's':
-          e.preventDefault();
-          movePlayer(0, 1);
-          break;
-        case 'arrowleft':
-        case 'a':
-          e.preventDefault();
-          movePlayer(-1, 0);
-          break;
-        case 'arrowright':
-        case 'd':
-          e.preventDefault();
-          movePlayer(1, 0);
-          break;
+    document.getElementById("startButton").addEventListener("click", startGame);
+
+    document.getElementById("restartButton").addEventListener("click", () => {
+      showPage("page1");
+    });
+
+    document.querySelectorAll(".direction").forEach(button => {
+      button.addEventListener("click", () => {
+        movePlayer(Number(button.dataset.dx), Number(button.dataset.dy));
+      });
+
+      // Compatibilidade extra para navegadores que ampliam com duplo toque.
+      button.addEventListener("dblclick", event => event.preventDefault());
+    });
+
+    window.addEventListener("keydown", event => {
+      const key = event.key.toLowerCase();
+      const moves = {
+        arrowup: [0, -1], w: [0, -1],
+        arrowdown: [0, 1], s: [0, 1],
+        arrowleft: [-1, 0], a: [-1, 0],
+        arrowright: [1, 0], d: [1, 0]
+      };
+
+      if (moves[key] && document.getElementById("page2").classList.contains("active")) {
+        event.preventDefault();
+        movePlayer(...moves[key]);
       }
     });
 
-    // Iniciar desenho do canvas
     drawMaze();
   </script>
 </body>
