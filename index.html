@@ -26,8 +26,7 @@
             padding: 0;
             user-select: none;
             -webkit-user-select: none;
-            /* Remove o flash cinzento ao tocar em botões no telemóvel */
-            -webkit-tap-highlight-color: transparent; 
+            -webkit-tap-highlight-color: transparent; /* Remove o flash cinzento nativo do telemóvel */
         }
 
         body {
@@ -115,7 +114,7 @@
             transition: transform 0.08s steps(2);
             text-transform: uppercase;
             display: inline-block;
-            touch-action: manipulation; /* CORREÇÃO: Remove zoom ao clicar rápido */
+            touch-action: manipulation; /* Bloqueia o zoom no clique duplo */
         }
 
         .pixel-btn:hover {
@@ -176,7 +175,7 @@
             align-items: center;
             justify-content: center;
             box-shadow: inset 2px 2px 0px var(--blue-light), inset -2px -2px 0px #091024, 2px 2px 0px #000;
-            touch-action: manipulation; /* CORREÇÃO: Impede o zoom do ecrã ao clicar rápido nas setas */
+            touch-action: manipulation; /* Bloqueia o zoom no clique duplo do D-Pad */
         }
 
         .dpad-btn:active {
