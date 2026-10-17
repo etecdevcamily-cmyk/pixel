@@ -1,568 +1,373 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#081326">
-  <title>Missão do Coração — Labirinto Pixel</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#081326">
+<title>Missão do Coração — Labirinto Pixel</title>
 
-  <style>
-    :root {
-      --bg: #081326;
-      --panel: #102344;
-      --blue: #244878;
-      --red: #ff304f;
-      --red-dark: #9d1530;
-      --text: #f3f5ff;
-      --muted: #bdc9df;
-    }
+<style>
+:root {
+  --bg: #081326;
+  --panel: #102344;
+  --blue: #244878;
+  --red: #ff304f;
+  --red-dark: #9d1530;
+  --text: #f3f5ff;
+  --muted: #bdc9df;
+}
+* { box-sizing: border-box; }
+body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
+  display: grid;
+  place-items: center;
+  color: var(--text);
+  background: radial-gradient(ellipse at center, #142a4b 0%, var(--bg) 72%);
+  font-family: "Courier New", monospace;
+  text-align: center;
+}
+button { color: inherit; font: inherit; }
+.game { width: min(100%, 540px); }
+.page {
+  display: none;
+  padding: 28px 20px;
+  background: var(--panel);
+  border: 5px solid #030812;
+  box-shadow: 0 0 0 5px var(--blue), 8px 8px 0 #030812;
+}
+.page.active { display: block; animation: appear 220ms steps(4, end); }
+@keyframes appear {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+h1, h2 {
+  color: var(--red);
+  line-height: 1.5;
+  text-shadow: 3px 3px 0 #030812;
+}
+h1 { font-size: clamp(19px, 5vw, 27px); }
+h2 { font-size: clamp(17px, 4.5vw, 23px); }
+p {
+  color: var(--muted);
+  font-size: clamp(14px, 3.5vw, 17px);
+  line-height: 1.8;
+}
+.pixel-button {
+  margin-top: 14px;
+  padding: 14px 18px;
+  border: 4px solid #030812;
+  background: var(--red);
+  box-shadow: inset -4px -4px 0 var(--red-dark), 4px 4px 0 #030812;
+  font-weight: bold;
+  cursor: pointer;
+}
+.pixel-button:active {
+  transform: translate(3px, 3px);
+  box-shadow: inset -2px -2px 0 var(--red-dark);
+}
+.pixel-button:focus-visible,
+.direction:focus-visible {
+  outline: 3px dashed white;
+  outline-offset: 4px;
+}
+.maze-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  color: var(--red);
+  font-size: 12px;
+}
+canvas {
+  display: block;
+  width: min(100%, 330px);
+  height: auto;
+  margin: 0 auto;
+  border: 4px solid #030812;
+  box-shadow: 0 0 0 4px var(--red);
+  image-rendering: pixelated;
+}
+.instructions { margin: 18px 0 8px; font-size: 12px; }
+.controls {
+  width: max-content;
+  margin: 16px auto 4px;
+  display: grid;
+  grid-template-columns: repeat(3, 54px);
+  grid-template-rows: repeat(2, 48px);
+  gap: 7px;
+}
+.direction {
+  display: grid;
+  place-items: center;
+  border: 3px solid #030812;
+  background: var(--blue);
+  box-shadow: inset 2px 2px 0 #41679a, 3px 3px 0 #030812;
+  font-size: 20px;
+  cursor: pointer;
+  /* Evita o zoom acidental ao tocar várias vezes nos controlos. */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.direction:active {
+  background: var(--red-dark);
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+.up { grid-column: 2; grid-row: 1; }
+.left { grid-column: 1; grid-row: 2; }
+.down { grid-column: 2; grid-row: 2; }
+.right { grid-column: 3; grid-row: 2; }
 
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      min-height: 100vh;
-      margin: 0;
-      padding: 20px;
-      display: grid;
-      place-items: center;
-      color: var(--text);
-      background: radial-gradient(ellipse at center, #142a4b 0%, var(--bg) 72%);
-      font-family: "Courier New", monospace;
-      text-align: center;
-    }
-
-    button {
-      color: inherit;
-      font: inherit;
-    }
-
-    .game {
-      width: min(100%, 540px);
-    }
-
-    .page {
-      display: none;
-      padding: 28px 20px;
-      background: var(--panel);
-      border: 5px solid #030812;
-      box-shadow: 0 0 0 5px var(--blue), 8px 8px 0 #030812;
-    }
-
-    .page.active {
-      display: block;
-      animation: appear 220ms steps(4, end);
-    }
-
-    @keyframes appear {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    h1,
-    h2 {
-      color: var(--red);
-      line-height: 1.5;
-      text-shadow: 3px 3px 0 #030812;
-    }
-
-    h1 {
-      font-size: clamp(19px, 5vw, 27px);
-    }
-
-    h2 {
-      font-size: clamp(17px, 4.5vw, 23px);
-    }
-
-    p {
-      color: var(--muted);
-      font-size: clamp(14px, 3.5vw, 17px);
-      line-height: 1.8;
-    }
-
-    .pixel-button {
-      margin-top: 14px;
-      padding: 14px 18px;
-      border: 4px solid #030812;
-      background: var(--red);
-      box-shadow: inset -4px -4px 0 var(--red-dark), 4px 4px 0 #030812;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .pixel-button:active {
-      transform: translate(3px, 3px);
-      box-shadow: inset -2px -2px 0 var(--red-dark);
-    }
-
-    .pixel-button:focus-visible,
-    .direction:focus-visible {
-      outline: 3px dashed white;
-      outline-offset: 4px;
-    }
-
-    .maze-info {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 16px;
-      color: var(--red);
-      font-size: 12px;
-    }
-
-    canvas {
-      display: block;
-      width: min(100%, 330px);
-      height: auto;
-      margin: 0 auto;
-      border: 4px solid #030812;
-      box-shadow: 0 0 0 4px var(--red);
-      image-rendering: pixelated;
-    }
-
-    .instructions {
-      margin: 18px 0 8px;
-      font-size: 12px;
-    }
-
-    .controls {
-      width: max-content;
-      margin: 16px auto 4px;
-      display: grid;
-      grid-template-columns: repeat(3, 54px);
-      grid-template-rows: repeat(2, 48px);
-      gap: 7px;
-    }
-
-    .direction {
-      display: grid;
-      place-items: center;
-      border: 3px solid #030812;
-      background: var(--blue);
-      box-shadow: inset 2px 2px 0 #41679a, 3px 3px 0 #030812;
-      font-size: 20px;
-      cursor: pointer;
-
-      /* Evita o zoom acidental ao tocar várias vezes nos controlos. */
-      touch-action: none;
-      -webkit-user-select: none;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .direction:active {
-      background: var(--red-dark);
-      transform: translate(2px, 2px);
-      box-shadow: none;
-    }
-
-    .up {
-      grid-column: 2;
-      grid-row: 1;
-    }
-
-    .left {
-      grid-column: 1;
-      grid-row: 2;
-    }
-
-    .down {
-      grid-column: 2;
-      grid-row: 2;
-    }
-
-    .right {
-      grid-column: 3;
-      grid-row: 2;
-    }
-
-    .win-frame {
-      padding: 26px 16px;
-      border: 5px solid var(--red);
-      box-shadow: 0 0 0 5px #030812, 0 0 0 10px var(--blue);
-      animation: border-pulse 900ms steps(2, end) infinite;
-    }
-
-    @keyframes border-pulse {
-      50% {
-        border-color: var(--blue);
-        box-shadow: 0 0 0 5px #030812, 0 0 0 10px var(--red);
-      }
-    }
-
-    .heart {
-      width: 144px;
-      height: 128px;
-      margin: 22px auto;
-      display: grid;
-      grid-template-columns: repeat(9, 1fr);
-      grid-template-rows: repeat(8, 1fr);
-      gap: 3px;
-      animation: heartbeat 800ms steps(2, end) infinite;
-    }
-
-    .heart span {
-      background: transparent;
-    }
-
-    .heart .on {
-      background: var(--red);
-    }
-
-    .heart .shine {
-      background: #ff9aaa;
-    }
-
-    @keyframes heartbeat {
-      50% {
-        transform: scale(1.08);
-      }
-    }
-
-    .final-message {
-      max-width: 380px;
-      margin: 0 auto;
-      color: var(--text);
-    }
-
-    @media (max-width: 380px) {
-      body {
-        padding: 14px;
-      }
-
-      .page {
-        padding: 22px 14px;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-      }
-    }
-  </style>
+@media (max-width: 380px) {
+  body { padding: 14px; }
+  .page { padding: 22px 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+</style>
 </head>
 
 <body>
-  <main class="game">
-    <!-- Página 1: introdução -->
-    <section class="page active" id="page1" aria-labelledby="title">
-      <h1 id="title">[ MISSÃO DO CORAÇÃO ]</h1>
-      <p>
-        Olá! Preparei um pequeno desafio para ti.<br><br>
-        Atravesse o labirinto e encontre o coração!
-      </p>
-      <button class="pixel-button" id="startButton" type="button">
-        ▶ Iniciar jogo
-      </button>
-    </section>
+<main class="game">
+  <!-- Página 1: introdução -->
+  <section class="page active" id="page1" aria-labelledby="title">
+    <h1 id="title">[ MISSÃO DO CORAÇÃO ]</h1>
+    <p>
+      Olá! Preparei um pequeno desafio para ti.<br><br>
+      Atravesse o labirinto e encontre o coração!
+    </p>
+    <button class="pixel-button" id="startButton" type="button">
+      ▶ Iniciar jogo
+    </button>
+  </section>
 
-    <!-- Página 2: labirinto -->
-    <section class="page" id="page2" aria-label="Jogo do labirinto">
-      <div class="maze-info">
-        <span>FASE 01</span>
-        <span>DESTINO: ♥</span>
-      </div>
+  <!-- Página 2: labirinto, fase 1 -->
+  <section class="page" id="page2" aria-label="Jogo do labirinto">
+    <div class="maze-info">
+      <span>FASE 01</span>
+      <span>DESTINO: ♥</span>
+    </div>
 
-      <canvas
-        id="maze"
-        width="330"
-        height="330"
-        aria-label="Labirinto. Leva a personagem vermelha até ao coração."
-      ></canvas>
+    <canvas id="maze" width="330" height="330"
+      aria-label="Labirinto. Leva a personagem vermelha até ao coração.">
+    </canvas>
 
-      <p class="instructions">Usa as setas, WASD ou os botões abaixo.</p>
+    <p class="instructions">Usa as setas, WASD ou os botões abaixo.</p>
 
-      <div class="controls" aria-label="Controlos do labirinto">
-        <button
-          class="direction up"
-          type="button"
-          aria-label="Cima"
-          data-dx="0"
-          data-dy="-1"
-        >▲</button>
+    <div class="controls" aria-label="Controlos do labirinto">
+      <button class="direction up" type="button" aria-label="Cima"
+        data-dx="0" data-dy="-1">▲</button>
+      <button class="direction left" type="button" aria-label="Esquerda"
+        data-dx="-1" data-dy="0">◀</button>
+      <button class="direction down" type="button" aria-label="Baixo"
+        data-dx="0" data-dy="1">▼</button>
+      <button class="direction right" type="button" aria-label="Direita"
+        data-dx="1" data-dy="0">▶</button>
+    </div>
 
-        <button
-          class="direction left"
-          type="button"
-          aria-label="Esquerda"
-          data-dx="-1"
-          data-dy="0"
-        >◀</button>
+    <p id="gameStatus" class="instructions" aria-live="polite">
+      Encontre o coração ♥️
+    </p>
+  </section>
+  <!-- A página final está em final.html, depois da fase 5. -->
+</main>
 
-        <button
-          class="direction down"
-          type="button"
-          aria-label="Baixo"
-          data-dx="0"
-          data-dy="1"
-        >▼</button>
+<script>
+const pages = [...document.querySelectorAll(".page")];
+const canvas = document.getElementById("maze");
+const ctx = canvas.getContext("2d");
+const statusText = document.getElementById("gameStatus");
 
-        <button
-          class="direction right"
-          type="button"
-          aria-label="Direita"
-          data-dx="1"
-          data-dy="0"
-        >▶</button>
-      </div>
+// Som 8-bit gerado pelo navegador, sem ficheiros externos.
+let audioContext = null;
 
-      <p id="gameStatus" class="instructions" aria-live="polite">
-        Encontre o coração ♥️
-      </p>
-    </section>
+function unlockAudio() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
 
-    <!-- Página 3: final -->
-    <section class="page" id="page3" aria-labelledby="finalTitle">
-      <div class="win-frame">
-        <h2 id="finalTitle">PARABÉNS! 🎉</h2>
+  if (!audioContext) audioContext = new AudioContextClass();
 
-        <div class="heart" aria-label="Coração em pixel art" role="img">
-          <span></span><span class="on"></span><span class="on"></span><span></span><span></span><span class="on"></span><span class="on"></span><span></span><span></span>
-          <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span>
-          <span class="on"></span><span class="shine"></span><span class="on"></span><span class="on"></span><span></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span>
-          <span></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span>
-          <span></span><span></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span>
-          <span></span><span></span><span></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span><span></span>
-          <span></span><span></span><span></span><span></span><span class="on"></span><span></span><span></span><span></span><span></span>
-          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-        </div>
+  if (audioContext.state === "suspended") {
+    audioContext.resume().catch(() => {});
+  }
+}
 
-        <p class="final-message">
-          Chegaste ao destino!<br><br>
-          Se você chegou até o final, é porque está no tédio igual à criadora desse site 🤣
-        </p>
+function playMoveSound(dx, dy) {
+  if (!audioContext) return;
 
-        <button class="pixel-button" id="restartButton" type="button">
-          ↺ Jogar novamente
-        </button>
-      </div>
-    </section>
-  </main>
+  if (audioContext.state === "suspended") {
+    audioContext.resume().catch(() => {});
+  }
 
-  <script>
-    const pages = [...document.querySelectorAll(".page")];
-    const canvas = document.getElementById("maze");
-    const ctx = canvas.getContext("2d");
-    const statusText = document.getElementById("gameStatus");
+  const now = audioContext.currentTime;
+  const oscillator = audioContext.createOscillator();
+  const volume = audioContext.createGain();
 
-    // Som 8-bit gerado pelo navegador, sem ficheiros externos.
-    let audioContext = null;
+  // O tom muda ligeiramente conforme a direção do movimento.
+  let frequency = 500;
+  if (dy < 0) frequency = 620;
+  if (dy > 0) frequency = 440;
+  if (dx < 0) frequency = 520;
+  if (dx > 0) frequency = 680;
 
-    function unlockAudio() {
-      const AudioContextClass =
-        window.AudioContext || window.webkitAudioContext;
+  oscillator.type = "square";
+  oscillator.frequency.setValueAtTime(frequency, now);
 
-      if (!AudioContextClass) return;
+  volume.gain.setValueAtTime(0.0001, now);
+  volume.gain.exponentialRampToValueAtTime(0.06, now + 0.008);
+  volume.gain.exponentialRampToValueAtTime(0.0001, now + 0.075);
 
-      if (!audioContext) {
-        audioContext = new AudioContextClass();
-      }
+  oscillator.connect(volume);
+  volume.connect(audioContext.destination);
+  oscillator.start(now);
+  oscillator.stop(now + 0.08);
+}
 
-      if (audioContext.state === "suspended") {
-        audioContext.resume().catch(() => {});
-      }
-    }
+// 1 = parede, 0 = caminho livre
+const maze = [
+  [1,1,1,1,1,1,1,1,1,1,1],
+  [1,0,0,0,1,0,0,0,0,0,1],
+  [1,1,1,0,1,0,1,1,1,0,1],
+  [1,0,0,0,0,0,1,0,1,0,1],
+  [1,0,1,1,1,1,1,0,1,0,1],
+  [1,0,1,0,0,0,0,0,0,0,1],
+  [1,0,1,0,1,1,1,1,1,0,1],
+  [1,0,0,0,1,0,0,0,1,0,1],
+  [1,1,1,0,1,0,1,0,1,0,1],
+  [1,0,0,0,0,0,1,0,0,0,1],
+  [1,1,1,1,1,1,1,1,1,1,1]
+];
 
-    function playMoveSound(dx, dy) {
-      if (!audioContext) return;
+const cell = canvas.width / maze.length;
+const goal = { x: 9, y: 9 };
+let player = { x: 1, y: 1 };
+let gameWon = false;
 
-      if (audioContext.state === "suspended") {
-        audioContext.resume().catch(() => {});
-      }
+function showPage(id) {
+  pages.forEach(page => page.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
 
-      const now = audioContext.currentTime;
-      const oscillator = audioContext.createOscillator();
-      const volume = audioContext.createGain();
+function drawMaze() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // O tom muda ligeiramente conforme a direção do movimento.
-      let frequency = 500;
-      if (dy < 0) frequency = 620;
-      if (dy > 0) frequency = 440;
-      if (dx < 0) frequency = 520;
-      if (dx > 0) frequency = 680;
+  for (let y = 0; y < maze.length; y++) {
+    for (let x = 0; x < maze[y].length; x++) {
+      const px = x * cell;
+      const py = y * cell;
 
-      oscillator.type = "square";
-      oscillator.frequency.setValueAtTime(frequency, now);
+      if (maze[y][x] === 1) {
+        ctx.fillStyle = "#102344";
+        ctx.fillRect(px, py, cell, cell);
 
-      volume.gain.setValueAtTime(0.0001, now);
-      volume.gain.exponentialRampToValueAtTime(0.06, now + 0.008);
-      volume.gain.exponentialRampToValueAtTime(0.0001, now + 0.075);
-
-      oscillator.connect(volume);
-      volume.connect(audioContext.destination);
-
-      oscillator.start(now);
-      oscillator.stop(now + 0.08);
-    }
-
-    // 1 = parede, 0 = caminho livre
-    const maze = [
-      [1,1,1,1,1,1,1,1,1,1,1],
-      [1,0,0,0,1,0,0,0,0,0,1],
-      [1,1,1,0,1,0,1,1,1,0,1],
-      [1,0,0,0,0,0,1,0,1,0,1],
-      [1,0,1,1,1,1,1,0,1,0,1],
-      [1,0,1,0,0,0,0,0,0,0,1],
-      [1,0,1,0,1,1,1,1,1,0,1],
-      [1,0,0,0,1,0,0,0,1,0,1],
-      [1,1,1,0,1,0,1,0,1,0,1],
-      [1,0,0,0,0,0,1,0,0,0,1],
-      [1,1,1,1,1,1,1,1,1,1,1]
-    ];
-
-    const cell = canvas.width / maze.length;
-    const goal = { x: 9, y: 9 };
-    let player = { x: 1, y: 1 };
-    let gameWon = false;
-
-    function showPage(id) {
-      pages.forEach(page => page.classList.remove("active"));
-      document.getElementById(id).classList.add("active");
-    }
-
-    function drawMaze() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      for (let y = 0; y < maze.length; y++) {
-        for (let x = 0; x < maze[y].length; x++) {
-          const px = x * cell;
-          const py = y * cell;
-
-          if (maze[y][x] === 1) {
-            ctx.fillStyle = "#102344";
-            ctx.fillRect(px, py, cell, cell);
-
-            ctx.fillStyle = "#244878";
-            ctx.fillRect(px + 3, py + 3, cell - 6, cell - 6);
-          } else {
-            ctx.fillStyle = "#050b16";
-            ctx.fillRect(px, py, cell, cell);
-          }
-        }
-      }
-
-      // Coração de destino em pixel art
-      const gx = goal.x * cell;
-      const gy = goal.y * cell;
-
-      ctx.fillStyle = "#ff304f";
-      ctx.fillRect(gx + 7, gy + 8, 7, 7);
-      ctx.fillRect(gx + 16, gy + 8, 7, 7);
-      ctx.fillRect(gx + 5, gy + 13, 20, 7);
-      ctx.fillRect(gx + 9, gy + 20, 12, 5);
-      ctx.fillRect(gx + 13, gy + 25, 4, 3);
-
-      // Personagem
-      const px = player.x * cell;
-      const py = player.y * cell;
-
-      ctx.fillStyle = "#ff304f";
-      ctx.fillRect(px + 7, py + 6, 16, 18);
-
-      ctx.fillStyle = "#ffd6dc";
-      ctx.fillRect(px + 10, py + 9, 10, 8);
-
-      ctx.fillStyle = "#081326";
-      ctx.fillRect(px + 12, py + 11, 2, 3);
-      ctx.fillRect(px + 17, py + 11, 2, 3);
-    }
-
-    function movePlayer(dx, dy) {
-      if (!document.getElementById("page2").classList.contains("active") || gameWon) {
-        return;
-      }
-
-      const nextX = player.x + dx;
-      const nextY = player.y + dy;
-
-      // Não move nem toca som se a personagem bater numa parede.
-      if (maze[nextY]?.[nextX] !== 0) return;
-
-      player = { x: nextX, y: nextY };
-      playMoveSound(dx, dy);
-      drawMaze();
-
-      if (player.x === goal.x && player.y === goal.y) {
-        gameWon = true;
-        statusText.textContent = "Destino encontrado!";
-
-        window.setTimeout(() => {
-          showPage("page3");
-        }, 350);
+        ctx.fillStyle = "#244878";
+        ctx.fillRect(px + 3, py + 3, cell - 6, cell - 6);
+      } else {
+        ctx.fillStyle = "#050b16";
+        ctx.fillRect(px, py, cell, cell);
       }
     }
+  }
 
-    function startGame() {
-      // O clique inicial permite ativar áudio nos navegadores móveis.
-      unlockAudio();
+  // Coração de destino em pixel art
+  const gx = goal.x * cell;
+  const gy = goal.y * cell;
 
-      player = { x: 1, y: 1 };
-      gameWon = false;
-      statusText.textContent = "Encontre o coração ♥️";
+  ctx.fillStyle = "#ff304f";
+  ctx.fillRect(gx + 7, gy + 8, 7, 7);
+  ctx.fillRect(gx + 16, gy + 8, 7, 7);
+  ctx.fillRect(gx + 5, gy + 13, 20, 7);
+  ctx.fillRect(gx + 9, gy + 20, 12, 5);
+  ctx.fillRect(gx + 13, gy + 25, 4, 3);
 
-      drawMaze();
-      showPage("page2");
-    }
+  // Personagem
+  const px = player.x * cell;
+  const py = player.y * cell;
 
-    document
-      .getElementById("startButton")
-      .addEventListener("click", startGame);
+  ctx.fillStyle = "#ff304f";
+  ctx.fillRect(px + 7, py + 6, 16, 18);
 
-    document
-      .getElementById("restartButton")
-      .addEventListener("click", () => {
-        showPage("page1");
-      });
+  ctx.fillStyle = "#ffd6dc";
+  ctx.fillRect(px + 10, py + 9, 10, 8);
 
-    document.querySelectorAll(".direction").forEach(button => {
-      button.addEventListener("click", () => {
-        movePlayer(
-          Number(button.dataset.dx),
-          Number(button.dataset.dy)
-        );
-      });
+  ctx.fillStyle = "#081326";
+  ctx.fillRect(px + 12, py + 11, 2, 3);
+  ctx.fillRect(px + 17, py + 11, 2, 3);
+}
 
-      // Evita zoom por duplo toque em alguns navegadores móveis.
-      button.addEventListener("dblclick", event => {
-        event.preventDefault();
-      });
-    });
+function movePlayer(dx, dy) {
+  if (!document.getElementById("page2").classList.contains("active") || gameWon) {
+    return;
+  }
 
-    window.addEventListener("keydown", event => {
-      const key = event.key.toLowerCase();
+  const nextX = player.x + dx;
+  const nextY = player.y + dy;
 
-      const moves = {
-        arrowup: [0, -1],
-        w: [0, -1],
-        arrowdown: [0, 1],
-        s: [0, 1],
-        arrowleft: [-1, 0],
-        a: [-1, 0],
-        arrowright: [1, 0],
-        d: [1, 0]
-      };
+  // Não move nem toca som se a personagem bater numa parede.
+  if (maze[nextY]?.[nextX] !== 0) return;
 
-      if (
-        moves[key] &&
-        document.getElementById("page2").classList.contains("active")
-      ) {
-        event.preventDefault();
-        movePlayer(...moves[key]);
-      }
-    });
+  player = { x: nextX, y: nextY };
+  playMoveSound(dx, dy);
+  drawMaze();
 
-    drawMaze();
-  </script>
+  if (player.x === goal.x && player.y === goal.y) {
+    gameWon = true;
+    statusText.textContent = "Destino encontrado!";
+
+    // Segue para a fase 2.
+    window.setTimeout(() => {
+      window.location.href = "level2.html";
+    }, 350);
+  }
+}
+
+function startGame() {
+  // O clique inicial permite ativar áudio nos navegadores móveis.
+  unlockAudio();
+
+  player = { x: 1, y: 1 };
+  gameWon = false;
+  statusText.textContent = "Encontre o coração ♥️";
+  drawMaze();
+  showPage("page2");
+}
+
+document.getElementById("startButton").addEventListener("click", startGame);
+
+document.querySelectorAll(".direction").forEach(button => {
+  button.addEventListener("click", () => {
+    movePlayer(Number(button.dataset.dx), Number(button.dataset.dy));
+  });
+
+  // Evita zoom por duplo toque em alguns navegadores móveis.
+  button.addEventListener("dblclick", event => event.preventDefault());
+});
+
+window.addEventListener("keydown", event => {
+  const key = event.key.toLowerCase();
+
+  const moves = {
+    arrowup: [0, -1], w: [0, -1],
+    arrowdown: [0, 1], s: [0, 1],
+    arrowleft: [-1, 0], a: [-1, 0],
+    arrowright: [1, 0], d: [1, 0]
+  };
+
+  if (moves[key] && document.getElementById("page2").classList.contains("active")) {
+    event.preventDefault();
+    movePlayer(...moves[key]);
+  }
+});
+
+drawMaze();
+</script>
 </body>
 </html>

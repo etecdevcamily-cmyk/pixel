@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#081326">
+<title>Missão do Coração — Fase 04</title>
+<link rel="stylesheet" href="levels.css">
+</head>
+<body>
+<main class="game">
+  <section class="page active" aria-label="Jogo do labirinto">
+    <div class="maze-info">
+      <span>FASE 04</span>
+      <span>DESTINO: ♥</span>
+    </div>
+
+    <canvas id="maze" width="330" height="330"
+      aria-label="Labirinto. Leva a personagem vermelha até ao coração.">
+    </canvas>
+
+    <p class="instructions">Usa as setas, WASD ou os botões abaixo.</p>
+
+    <div class="controls" aria-label="Controlos do labirinto">
+      <button class="direction up" type="button" aria-label="Cima"
+        data-dx="0" data-dy="-1">▲</button>
+      <button class="direction left" type="button" aria-label="Esquerda"
+        data-dx="-1" data-dy="0">◀</button>
+      <button class="direction down" type="button" aria-label="Baixo"
+        data-dx="0" data-dy="1">▼</button>
+      <button class="direction right" type="button" aria-label="Direita"
+        data-dx="1" data-dy="0">▶</button>
+    </div>
+
+    <p id="gameStatus" class="instructions" aria-live="polite">
+      Encontre o coração ♥️
+    </p>
+  </section>
+</main>
+
+<script>
+  // 1 = parede, 0 = caminho livre
+  window.LEVEL = {
+    next: "level5.html",
+    fog: 0,
+    maze: [
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+      [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1],
+      [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
+      [1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1],
+      [1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
+      [1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1],
+      [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1],
+      [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1],
+      [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1],
+      [1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1],
+      [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+      [1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ]
+  };
+</script>
+<script src="level.js"></script>
+</body>
+</html>
